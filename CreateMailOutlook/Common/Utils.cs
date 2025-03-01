@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.IO;
 using System.Drawing.Imaging;
 using System.Diagnostics;
+using System.Net;
 
  namespace CreateMailOutlook.Common
 {
@@ -45,6 +46,7 @@ using System.Diagnostics;
                     if (key != null)
                     {
                         key.SetValue(registryKey, value, RegistryValueKind.String);
+
                     }
                     return "OK";
                 }
@@ -63,31 +65,81 @@ using System.Diagnostics;
             return new string(Enumerable.Repeat(chars, length)
                 .Select(s => s[random.Next(s.Length)]).ToArray()).ToUpper();
         }
+        public static void RunCMD(string cmd)
+        {
+            ProcessStartInfo psi = new ProcessStartInfo()
+            {
+                FileName = "cmd.exe",
+                Arguments = $"/c {cmd}",
+                Verb = "runas", // Chạy với quyền Admin
+                UseShellExecute = true, // Bắt buộc phải bật khi dùng runas
+                CreateNoWindow = false // Để hiển thị CMD
+            };
+
+            try
+            {
+                Process.Start(psi);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Lỗi: " + ex.Message);
+            }
+        }
         public static void ChangeInfo()
         {
 
-            using (RegistryKey key = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", true))
+            using (RegistryKey registry = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", true))
             {
-                if (key != null)
+                if (registry != null)
                 {
-                    key.SetValue("ProductId", $"{RandomString(5)}-{RandomString(5)}-{RandomString(5)}-{RandomString(5)}", RegistryValueKind.String);
-                    
-                    key.SetValue("InstallDate", (new DateTimeOffset(2023,2,2,2,2,2,new TimeSpan())).ToUnixTimeSeconds(), RegistryValueKind.DWord);
+                    registry.SetValue("ProductId", $"{RandomString(5)}-{RandomString(5)}-{RandomString(5)}-{RandomString(5)}", RegistryValueKind.String);
 
-                    key.SetValue("ProductName", $"Windows 10", RegistryValueKind.String);
+                    registry.SetValue("InstallDate", (new DateTimeOffset(2023,2,2,2,2,2,new TimeSpan())).ToUnixTimeSeconds(), RegistryValueKind.DWord);
+
+                    registry.SetValue("ProductName", $"Windows 10", RegistryValueKind.String);
                 }
               
             }
-            using (RegistryKey key = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\SQMClient", true))
+            using (RegistryKey registry = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\SQMClient", true))
             {
-                if (key != null)
+                if (registry != null)
                 {
-                    key.SetValue("MachineId", $"{{{Guid.NewGuid().ToString().ToUpper()}}}", RegistryValueKind.String);
+                    registry.SetValue("MachineId", $"{{{Guid.NewGuid().ToString().ToUpper()}}}", RegistryValueKind.String);
 
                    
                 }
 
             }
+
+
+            //proxy c1
+            using (RegistryKey registry = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Internet Settings", true))
+            {
+                if (registry != null)
+                {
+                    registry.SetValue("ProxyEnable", 1);
+                    registry.SetValue("ProxyServer", "172.24.10.10");
+                    Console.WriteLine("Proxy đã được thiết lập với xác thực tự động từ Credential Manager.");
+                    RunCMD("cmdkey /add:proxy.example.com /user:admin /pass:123456");
+
+                }
+            }
+
+            //proxy c2
+
+            string key = @"Software\Microsoft\Windows\CurrentVersion\Internet Settings";
+            using (RegistryKey registry = Registry.CurrentUser.OpenSubKey(key, true))
+            {
+                string pacUrl = "file:///"+Path.Combine(Application.ExecutablePath,"proxy/proxy.pac");
+                if (registry != null)
+                {
+                    registry.SetValue("AutoConfigURL", pacUrl);
+                    registry.SetValue("ProxyEnable", 1);
+                    Console.WriteLine("Proxy PAC đã được thiết lập!");
+                }
+            }
+
+
         }
 
         public static string GetDeviceId()
