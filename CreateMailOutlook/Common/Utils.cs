@@ -14,11 +14,23 @@ using System.Diagnostics;
 using System.Net;
 using Emgu.CV.Reg;
 using System.Xml.Linq;
+using System.Text.RegularExpressions;
 
- namespace CreateMailOutlook.Common
-{
+ namespace CreateMailOutlook.Common;
+
     public static class Utils
     {
+        public static string ToVietNameseChacracter(this string s)
+        {
+            if (string.IsNullOrEmpty(s))
+            {
+                return string.Empty;
+            }
+
+            Regex regex = new Regex("\\p{IsCombiningDiacriticalMarks}+");
+            string input = s.Normalize(NormalizationForm.FormD);
+            return regex.Replace(input, string.Empty);
+        }
         public static string GetRegistry(string registryPath, string registryKey)
         {
             try
@@ -389,53 +401,53 @@ using System.Xml.Linq;
 
 
 
-    }
+   
 
-   public class InfoBios()
-    {
-        List<string> lstVendor = new List<string>() { "Dell", "HP", "Lenovo", "ASUS","Acer" };
-        public string BIOSVendor { get; set; }
+   //public class InfoBios()
+   // {
+   //     List<string> lstVendor = new List<string>() { "Dell", "HP", "Lenovo", "ASUS","Acer" };
+   //     public string BIOSVendor { get; set; }
 
-        private string BIOSVersion { get; set; }
+   //     private string BIOSVersion { get; set; }
 
-        public string SystemFamily { get; set; }
-        public string SystemManufacturer { get; set; }
-        public string SystemProductName { get; set; }
-        public string SystemSKU { get; set; }
-        public string SystemVersion { get; set; }
-        public string BaseBoardProduct { get; set; }
-        public string BaseBoardManufacturer { get; set; }
+   //     public string SystemFamily { get; set; }
+   //     public string SystemManufacturer { get; set; }
+   //     public string SystemProductName { get; set; }
+   //     public string SystemSKU { get; set; }
+   //     public string SystemVersion { get; set; }
+   //     public string BaseBoardProduct { get; set; }
+   //     public string BaseBoardManufacturer { get; set; }
 
-        public InfoBios GetInfo()
-        {
-            Random random = new Random();
-            var i = random.Next(1);
-            InfoBios infoBios = new InfoBios();
-            switch (lstVendor[i])
-            {
-                case "Dell":
-                    infoBios.BIOSVendor = "Dell Inc.";
-                    infoBios.BIOSVersion = $"A{random.Next(2)}";
+   //     public InfoBios GetInfo()
+   //     {
+   //         Random random = new Random();
+   //         var i = random.Next(1);
+   //         InfoBios infoBios = new InfoBios();
+   //         switch (lstVendor[i])
+   //         {
+   //             case "Dell":
+   //                 infoBios.BIOSVendor = "Dell Inc.";
+   //                 infoBios.BIOSVersion = $"A{random.Next(2)}";
 
-                    break;
-                case "HP":
-                    infoBios.BIOSVendor = "HP";
-                    infoBios.BIOSVersion = $"F{random.Next(2)}";
-                    break;
-                case "Lenovo":
-                    infoBios.BIOSVendor = "HP";
-                    infoBios.BIOSVersion = $"N{random.Next(2)}";
-                    break;
-                case "ASUS":
-                    infoBios.BIOSVendor = "ASUS";
-                    infoBios.BIOSVersion = $"X.{random.Next(2)}";
-                    break;
-                case "Acer":
-                    infoBios.BIOSVendor = "Acer";
-                    infoBios.BIOSVersion = $"Vx.{random.Next(2)}";
-                    break;
-            }
-            return infoBios;
-        }
-    }
+   //                 break;
+   //             case "HP":
+   //                 infoBios.BIOSVendor = "HP";
+   //                 infoBios.BIOSVersion = $"F{random.Next(2)}";
+   //                 break;
+   //             case "Lenovo":
+   //                 infoBios.BIOSVendor = "HP";
+   //                 infoBios.BIOSVersion = $"N{random.Next(2)}";
+   //                 break;
+   //             case "ASUS":
+   //                 infoBios.BIOSVendor = "ASUS";
+   //                 infoBios.BIOSVersion = $"X.{random.Next(2)}";
+   //                 break;
+   //             case "Acer":
+   //                 infoBios.BIOSVendor = "Acer";
+   //                 infoBios.BIOSVersion = $"Vx.{random.Next(2)}";
+   //                 break;
+   //         }
+   //         return infoBios;
+   //     }
+   // }
 }

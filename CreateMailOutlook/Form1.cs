@@ -1,10 +1,12 @@
-﻿using Microsoft.Win32;
+﻿using CreateMailOutlook.Common;
+using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.Net.NetworkInformation;
 using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace CreateMailOutlook
 {
@@ -17,7 +19,7 @@ namespace CreateMailOutlook
         public Form1()
         {
             InitializeComponent();
-            // GetInfo();
+             GetInfo();
 
         }
         public void WriteLog(string content)
@@ -29,7 +31,7 @@ namespace CreateMailOutlook
         }
         public void GetInfo()
         {
-            this.Invoke(new Action(() =>
+            try
             {
                 using (RegistryKey registry = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", true))
                 {
@@ -54,7 +56,11 @@ namespace CreateMailOutlook
                 }
                 NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
                 txtMAC.Text = networkInterfaces.Where(w => w.OperationalStatus == OperationalStatus.Up && !string.IsNullOrEmpty(w.GetPhysicalAddress().ToString())).First().GetPhysicalAddress().ToString();
-            }));
+            }
+            catch (Exception)
+            {
+
+            }
         }
         [DllImport("user32.dll", SetLastError = true)]
         static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
@@ -66,94 +72,107 @@ namespace CreateMailOutlook
         const uint SWP_NOZORDER = 0x0004;
         private void btnStart_Click(object sender, EventArgs e)
         {
+            if (!string.IsNullOrEmpty(txtPathOut.Text))
+            {
+                PATH_MAIL = txtPathOut.Text;
+            }
             thread = new Thread(() =>
            {
                //start app maill
                // Process.Start("outlookmail:");
                while (true)
                {
-                   //using (RegistryKey registry = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", true))
-                   //{
-                   //    if (registry != null)
-                   //    {
-                   //        var proValue = $"{Common.Utils.RandomString(5)}-{Common.Utils.RandomString(5)}-{Common.Utils.RandomString(5)}-{Common.Utils.RandomString(5)}";
-                   //        registry.SetValue("ProductId", proValue, RegistryValueKind.String);
-                   //        WriteLog("Set ProductId : " + proValue);
-                   //        var insValue = (new DateTimeOffset(2023, 2, 2, 2, 2, 2, new TimeSpan())).ToUnixTimeSeconds();
-                   //        registry.SetValue("InstallDate", insValue, RegistryValueKind.DWord);
-                   //        WriteLog("Set InstallDate: "+insValue.ToString());
-                   //        var pronameValue = "Windows 10";
-                   //        registry.SetValue("ProductName", pronameValue, RegistryValueKind.String);
-                   //        WriteLog("Set ProductName: " + pronameValue.ToString());
-                   //    }
+                   try
+                   {
+                       using (RegistryKey registry = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", true))
+                       {
+                           if (registry != null)
+                           {
+                               var proValue = $"{Common.Utils.RandomString(5)}-{Common.Utils.RandomString(5)}-{Common.Utils.RandomString(5)}-{Common.Utils.RandomString(5)}";
+                               registry.SetValue("ProductId", proValue, RegistryValueKind.String);
+                               WriteLog("Set ProductId : " + proValue);
+                               var insValue = (new DateTimeOffset(2023, 2, 2, 2, 2, 2, new TimeSpan())).ToUnixTimeSeconds();
+                               registry.SetValue("InstallDate", insValue, RegistryValueKind.DWord);
+                               WriteLog("Set InstallDate: " + insValue.ToString());
+                               var pronameValue = "Windows 10";
+                               registry.SetValue("ProductName", pronameValue, RegistryValueKind.String);
+                               WriteLog("Set ProductName: " + pronameValue.ToString());
+                           }
 
-                   //}
-
-
-                   //using (RegistryKey registry = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\SQMClient", true))
-                   //{
-                   //    if (registry != null)
-                   //    {
-                   //        var machine = $"{{{Guid.NewGuid().ToString().ToUpper()}}}";
-                   //        registry.SetValue("MachineId", machine, RegistryValueKind.String);
-                   //        WriteLog("Set MachineId: " + machine.ToString());
-                   //    }
-
-                   //}
+                       }
 
 
-                   //// proxy c1
-                   //if(!string.IsNullOrEmpty(txtProxy.Text))
-                   //{
-                   //    using (RegistryKey registry = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Internet Settings", true))
-                   //    {
-                   //        if (registry != null)
-                   //        {
-                   //            registry.SetValue("ProxyEnable", 1);
-                   //            registry.SetValue("ProxyServer", txtProxy.Text);
-                   //            //Console.WriteLine("Proxy đã được thiết lập với xác thực tự động từ Credential Manager.");
-                   //            // RunCMD("cmdkey /add:proxy.example.com /user:admin /pass:123456");
-                   //            System.Diagnostics.Process.Start("cmd.exe", "/C \"ipconfig /flushdns\"");
-                   //            WriteLog("Set Proxy: " + txtProxy.Text);
-                   //        }
-                   //    }
-                   //}
+                       using (RegistryKey registry = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\SQMClient", true))
+                       {
+                           if (registry != null)
+                           {
+                               var machine = $"{{{Guid.NewGuid().ToString().ToUpper()}}}";
+                               registry.SetValue("MachineId", machine, RegistryValueKind.String);
+                               WriteLog("Set MachineId: " + machine.ToString());
+                           }
 
-                   //#region proxy c2
-                   ////proxy c2
+                       }
 
-                   ////string key = @"Software\Microsoft\Windows\CurrentVersion\Internet Settings";
-                   ////using (RegistryKey registry = Registry.CurrentUser.OpenSubKey(key, true))
-                   ////{
-                   ////    string pacUrl = "file:///"+Path.Combine(Application.ExecutablePath,"proxy/proxy.pac");
-                   ////    if (registry != null)
-                   ////    {
-                   ////        registry.SetValue("AutoConfigURL", pacUrl);
-                   ////        registry.SetValue("ProxyEnable", 1);
-                   ////        Console.WriteLine("Proxy PAC đã được thiết lập!");
-                   ////    }
-                   ////}
-                   //#endregion
 
-                   ////set mac
-                   //string newMacAddress = $"{Common.Utils.RandomString(2)}-{Common.Utils.RandomString(2)}-{Common.Utils.RandomString(2)}-{Common.Utils.RandomString(2)}-{Common.Utils.RandomString(2)}-{Common.Utils.RandomString(2)}";
+                       // proxy c1
+                       if (!string.IsNullOrEmpty(txtProxy.Text))
+                       {
+                           using (RegistryKey registry = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Internet Settings", true))
+                           {
+                               if (registry != null)
+                               {
+                                   registry.SetValue("ProxyEnable", 1);
+                                   registry.SetValue("ProxyServer", txtProxy.Text);
+                                   //Console.WriteLine("Proxy đã được thiết lập với xác thực tự động từ Credential Manager.");
+                                   // RunCMD("cmdkey /add:proxy.example.com /user:admin /pass:123456");
+                                   System.Diagnostics.Process.Start("cmd.exe", "/C \"ipconfig /flushdns\"");
+                                   WriteLog("Set Proxy: " + txtProxy.Text);
+                               }
+                           }
+                       }
 
-                   //// Tên của card mạng (có thể lấy từ "ipconfig")
-                   //string interfaceName = "Ethernet";
+                       #region proxy c2
+                       //proxy c2
 
-                   ////  string command = $"interface ipv4 set address name=\"{interfaceName}\" static 192.168.1.100 255.255.255.0 192.168.1.1";
-                   //string macCommand = $"interface set interface name=\"{interfaceName}\" mac={newMacAddress}";
+                       //string key = @"Software\Microsoft\Windows\CurrentVersion\Internet Settings";
+                       //using (RegistryKey registry = Registry.CurrentUser.OpenSubKey(key, true))
+                       //{
+                       //    string pacUrl = "file:///"+Path.Combine(Application.ExecutablePath,"proxy/proxy.pac");
+                       //    if (registry != null)
+                       //    {
+                       //        registry.SetValue("AutoConfigURL", pacUrl);
+                       //        registry.SetValue("ProxyEnable", 1);
+                       //        Console.WriteLine("Proxy PAC đã được thiết lập!");
+                       //    }
+                       //}
+                       #endregion
 
-                   //Common.Utils.RunCMD(macCommand);
+                       //set mac
+                       string newMacAddress = $"{Common.Utils.RandomString(2)}-{Common.Utils.RandomString(2)}-{Common.Utils.RandomString(2)}-{Common.Utils.RandomString(2)}-{Common.Utils.RandomString(2)}-{Common.Utils.RandomString(2)}";
 
-                   //WriteLog("Set Mac: " + newMacAddress);
+                       // Tên của card mạng (có thể lấy từ "ipconfig")
+                       string interfaceName = "Ethernet";
+
+                       //  string command = $"interface ipv4 set address name=\"{interfaceName}\" static 192.168.1.100 255.255.255.0 192.168.1.1";
+                       string macCommand = $"interface set interface name=\"{interfaceName}\" mac={newMacAddress}";
+
+                       Common.Utils.RunCMD(macCommand);
+
+                       WriteLog("Set Mac: " + newMacAddress);
+
+                       GetInfo();
+                   }
+                   catch (Exception)
+                   {
+
+                   }
                    Random rm = new Random();
                    List<string> lstHo = File.ReadAllLines("data/ho.txt").ToList();
                    List<string> lstDem = File.ReadAllLines("data/dem.txt").ToList();
                    List<string> lstTen = File.ReadAllLines("data/dem.txt").ToList();
-                   string ho = lstHo[rm.Next(1)];
-                   string ten = $"{lstDem[rm.Next(1)]} {lstTen[rm.Next(1)]}";
-                   string mail = ho + ten + Common.Utils.RandomString(4);
+                   string ho = lstHo[rm.Next(9)];
+                   string ten = $"{lstDem[rm.Next(9)]} {lstTen[rm.Next(9)]}";
+                   string mail = Regex.Replace(Utils.ToVietNameseChacracter((ho.Trim() + ten.Trim() + Utils.RandomString(4))).ToLower(), "(\\s+)|([^\\w])", "");
                    string pass = Common.Utils.RandomString(8);
                    WriteLog("Mở app..");
                    Process.Start(PATH_MAIL);
@@ -195,7 +214,10 @@ namespace CreateMailOutlook
 
                    }
                    WriteLog("Nhập mail...");
-                   Common.Utils.SenKeys(mail);
+                   this.Invoke(new Action(() =>
+                   {
+                       Common.Utils.SenKeys(mail);
+                   }));
                    Thread.Sleep(1000);
 
                    WriteLog("Chọn miền ...");
@@ -222,7 +244,10 @@ namespace CreateMailOutlook
                        Common.Utils.CloseProcess();
                        continue;
                    }
-                   Common.Utils.SenKeys(pass);
+                   this.Invoke(new Action(() =>
+                   {
+                       Common.Utils.SenKeys(pass);
+                   }));
                    Thread.Sleep(1000);
 
                    WriteLog("Tiếp theo...");
@@ -242,13 +267,17 @@ namespace CreateMailOutlook
                        Common.Utils.CloseProcess();
                        continue;
                    }
-                   Common.Utils.SenKeys(ho);
+                   this.Invoke(new Action(() =>
+                   {
+
+                       Common.Utils.SenKeys(ho);
+                   }));
                    Thread.Sleep(1000);
 
-                   Common.Utils.SenKeys("{TAB}");
+                   this.Invoke(new Action(() => { Common.Utils.SenKeys("{TAB}"); }));
                    Thread.Sleep(1000);
 
-                   Common.Utils.SenKeys(ten);
+                   this.Invoke(new Action(() => { Common.Utils.SenKeys(ten); }));
                    Thread.Sleep(1000);
 
 
@@ -293,12 +322,15 @@ namespace CreateMailOutlook
                    Thread.Sleep(1000);
                    Common.Utils.LeftMouseClick(createPosDay.X, createPosDay.Y);
                    Thread.Sleep(1000);
+                   this.Invoke(new Action(() =>
+                   {
 
-                   Common.Utils.SenKeys("{TAB}");
+                       Common.Utils.SenKeys("{TAB}");
+                   }));
                    Thread.Sleep(1000);
                    WriteLog("Nhập năm sinh...");
 
-                   Common.Utils.SenKeys("1994");
+                   this.Invoke(new Action(() => { Common.Utils.SenKeys("1994"); }));
                    Thread.Sleep(1000);
 
                    WriteLog("Tiếp theo...");
@@ -325,6 +357,7 @@ namespace CreateMailOutlook
         private void btnStop_Click(object sender, EventArgs e)
         {
             thread.Resume();
+            thread.Abort();
             thread = null;
             btnStart.Enabled = true;
         }
