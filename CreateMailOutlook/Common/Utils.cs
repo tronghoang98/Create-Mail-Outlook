@@ -12,6 +12,8 @@ using System.IO;
 using System.Drawing.Imaging;
 using System.Diagnostics;
 using System.Net;
+using Emgu.CV.Reg;
+using System.Xml.Linq;
 
  namespace CreateMailOutlook.Common
 {
@@ -78,13 +80,15 @@ using System.Net;
 
             try
             {
-                Process.Start(psi);
+                Process process = Process.Start(psi);
+                process.WaitForExit();
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Lỗi: " + ex.Message);
             }
         }
+       
         public static void ChangeInfo()
         {
 
@@ -112,36 +116,100 @@ using System.Net;
             }
 
 
-            //proxy c1
+
+           // proxy c1
             using (RegistryKey registry = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Internet Settings", true))
             {
                 if (registry != null)
                 {
                     registry.SetValue("ProxyEnable", 1);
                     registry.SetValue("ProxyServer", "172.24.10.10");
-                    Console.WriteLine("Proxy đã được thiết lập với xác thực tự động từ Credential Manager.");
-                    RunCMD("cmdkey /add:proxy.example.com /user:admin /pass:123456");
+                    //Console.WriteLine("Proxy đã được thiết lập với xác thực tự động từ Credential Manager.");
+                    // RunCMD("cmdkey /add:proxy.example.com /user:admin /pass:123456");
+                    System.Diagnostics.Process.Start("cmd.exe", "/C \"ipconfig /flushdns\"");
 
                 }
             }
-
+            #region proxy c2
             //proxy c2
 
-            string key = @"Software\Microsoft\Windows\CurrentVersion\Internet Settings";
-            using (RegistryKey registry = Registry.CurrentUser.OpenSubKey(key, true))
+            //string key = @"Software\Microsoft\Windows\CurrentVersion\Internet Settings";
+            //using (RegistryKey registry = Registry.CurrentUser.OpenSubKey(key, true))
+            //{
+            //    string pacUrl = "file:///"+Path.Combine(Application.ExecutablePath,"proxy/proxy.pac");
+            //    if (registry != null)
+            //    {
+            //        registry.SetValue("AutoConfigURL", pacUrl);
+            //        registry.SetValue("ProxyEnable", 1);
+            //        Console.WriteLine("Proxy PAC đã được thiết lập!");
+            //    }
+            //}
+            #endregion
+
+            //set mac
+            string newMacAddress = $"{RandomString(2)}-{RandomString(2)}-{RandomString(2)}-{RandomString(2)}-{RandomString(2)}-{RandomString(2)}";
+
+            // Tên của card mạng (có thể lấy từ "ipconfig")
+            string interfaceName = "Ethernet";
+
+          //  string command = $"interface ipv4 set address name=\"{interfaceName}\" static 192.168.1.100 255.255.255.0 192.168.1.1";
+            string macCommand = $"interface set interface name=\"{interfaceName}\" mac={newMacAddress}";
+
+            RunCMD(macCommand);
+
+
+            using (RegistryKey registry = Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System", true))
             {
-                string pacUrl = "file:///"+Path.Combine(Application.ExecutablePath,"proxy/proxy.pac");
                 if (registry != null)
                 {
-                    registry.SetValue("AutoConfigURL", pacUrl);
-                    registry.SetValue("ProxyEnable", 1);
-                    Console.WriteLine("Proxy PAC đã được thiết lập!");
+                    registry.SetValue("SystemBiosVersion", "LENOVO - 1340\r\nR2AET59W(1.34)\r\nLenovo - 1340\r\n");
                 }
             }
 
+            
+            using (RegistryKey registry = Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\BIOS", true))
+            {
+                if (registry != null)
+                {
+                    registry.SetValue("BaseBoardManufacturer", "LENOVO");
+                    registry.SetValue("BaseBoardProduct", "21JK006HVA");
+                    registry.SetValue("BIOSReleaseDate", "08/27/2024");
+                    registry.SetValue("BIOSVendor", "LENOVO");
+                    registry.SetValue("BIOSVersion", "R2AET59W(1.34)");
+                    registry.SetValue("SystemFamily", "ThinkPad E14 Gen 5");
+                    registry.SetValue("SystemManufacturer", "LENOVO");
+                    registry.SetValue("SystemProductName", "21JK006HVA");
+                    registry.SetValue("SystemSKU", "LENOVO_MT_21JK_BU_Think_FM_ThinkPad E14 Gen 5");
+                    registry.SetValue("SystemVersion", "ThinkPad E14 Gen 5");
 
+                }
+            }
         }
+        
+        static void ConnectVPN(string vpnName, string username, string password)
+        {
+            try
+            {
+                // Tạo lệnh rasdial để kết nối với VPN
+                string command = $"rasdial {vpnName} {username} {password}";
 
+                // Khởi chạy quá trình với lệnh
+                ProcessStartInfo psi = new ProcessStartInfo("cmd.exe", $"/C {command}")
+                {
+                    CreateNoWindow = true,
+                    UseShellExecute = false
+                };
+
+                Process process = Process.Start(psi);
+                process.WaitForExit();
+
+                Console.WriteLine("Đã kết nối VPN thành công.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Lỗi khi kết nối VPN: " + ex.Message);
+            }
+        }
         public static string GetDeviceId()
         {
             string path = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\SQMClient";
@@ -317,6 +385,57 @@ using System.Net;
                 return new Point();
             }
             
+        }
+
+
+
+    }
+
+   public class InfoBios()
+    {
+        List<string> lstVendor = new List<string>() { "Dell", "HP", "Lenovo", "ASUS","Acer" };
+        public string BIOSVendor { get; set; }
+
+        private string BIOSVersion { get; set; }
+
+        public string SystemFamily { get; set; }
+        public string SystemManufacturer { get; set; }
+        public string SystemProductName { get; set; }
+        public string SystemSKU { get; set; }
+        public string SystemVersion { get; set; }
+        public string BaseBoardProduct { get; set; }
+        public string BaseBoardManufacturer { get; set; }
+
+        public InfoBios GetInfo()
+        {
+            Random random = new Random();
+            var i = random.Next(1);
+            InfoBios infoBios = new InfoBios();
+            switch (lstVendor[i])
+            {
+                case "Dell":
+                    infoBios.BIOSVendor = "Dell Inc.";
+                    infoBios.BIOSVersion = $"A{random.Next(2)}";
+
+                    break;
+                case "HP":
+                    infoBios.BIOSVendor = "HP";
+                    infoBios.BIOSVersion = $"F{random.Next(2)}";
+                    break;
+                case "Lenovo":
+                    infoBios.BIOSVendor = "HP";
+                    infoBios.BIOSVersion = $"N{random.Next(2)}";
+                    break;
+                case "ASUS":
+                    infoBios.BIOSVendor = "ASUS";
+                    infoBios.BIOSVersion = $"X.{random.Next(2)}";
+                    break;
+                case "Acer":
+                    infoBios.BIOSVendor = "Acer";
+                    infoBios.BIOSVersion = $"Vx.{random.Next(2)}";
+                    break;
+            }
+            return infoBios;
         }
     }
 }
