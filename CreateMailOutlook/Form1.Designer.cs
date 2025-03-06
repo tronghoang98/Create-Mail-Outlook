@@ -146,7 +146,7 @@
             // txtMAC
             // 
             txtMAC.Font = new Font("Segoe UI", 10.2F);
-            txtMAC.Location = new Point(129, 436);
+            txtMAC.Location = new Point(129, 419);
             txtMAC.Name = "txtMAC";
             txtMAC.Size = new Size(268, 30);
             txtMAC.TabIndex = 12;
@@ -154,7 +154,7 @@
             // label6
             // 
             label6.AutoSize = true;
-            label6.Location = new Point(24, 439);
+            label6.Location = new Point(24, 422);
             label6.Name = "label6";
             label6.Size = new Size(41, 20);
             label6.TabIndex = 11;
