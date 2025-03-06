@@ -153,6 +153,8 @@ namespace CreateMailOutlook
                    List<string> lstTen = File.ReadAllLines("data/dem.txt").ToList();
                    string ho = lstHo[rm.Next(1)];
                    string ten = $"{lstDem[rm.Next(1)]} {lstTen[rm.Next(1)]}";
+                   string mail = ho + ten + Common.Utils.RandomString(4);
+                   string pass = Common.Utils.RandomString(8);
                    WriteLog("Mở app..");
                    Process.Start(PATH_MAIL);
                    while (true)
@@ -193,7 +195,7 @@ namespace CreateMailOutlook
 
                    }
                    WriteLog("Nhập mail...");
-                   Common.Utils.SenKeys($"{ho+ten+Common.Utils.RandomString(4)}");
+                   Common.Utils.SenKeys(mail);
                    Thread.Sleep(1000);
 
                    WriteLog("Chọn miền ...");
@@ -220,7 +222,7 @@ namespace CreateMailOutlook
                        Common.Utils.CloseProcess();
                        continue;
                    }
-                   Common.Utils.SenKeys("Hoang1998");
+                   Common.Utils.SenKeys(pass);
                    Thread.Sleep(1000);
 
                    WriteLog("Tiếp theo...");
