@@ -76,6 +76,7 @@
             txtProxy.Name = "txtProxy";
             txtProxy.Size = new Size(268, 30);
             txtProxy.TabIndex = 2;
+            txtProxy.Text = "http://s7.proxyxoay.net:8632";
             // 
             // txtProductId
             // 

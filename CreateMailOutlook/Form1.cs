@@ -19,8 +19,7 @@ namespace CreateMailOutlook
         public Form1()
         {
             InitializeComponent();
-             GetInfo();
-
+           var  a= Environment.OSVersion.ToString();
         }
         public void WriteLog(string content)
         {
@@ -33,15 +32,17 @@ namespace CreateMailOutlook
         {
             try
             {
+                string  productId="";
+                string installDate="";
+                string productName = "";
+                string machineId = "";
                 using (RegistryKey registry = Registry.LocalMachine.OpenSubKey("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", true))
                 {
                     if (registry != null)
                     {
-                        txtProductId.Text = registry.GetValue("ProductId").ToString();
-
-                        txtInstallDate.Text = registry.GetValue("InstallDate").ToString();
-
-                        txtProductName.Text = registry.GetValue("ProductName").ToString();
+                        productId = registry.GetValue("ProductId").ToString(); ;
+                         installDate= registry.GetValue("InstallDate").ToString();
+                         productName= registry.GetValue("ProductName").ToString();                        
                     }
 
                 }
@@ -49,13 +50,22 @@ namespace CreateMailOutlook
                 {
                     if (registry != null)
                     {
-                        txtMachineId.Text = registry.GetValue("MachineId").ToString();
-
+                         machineId= registry.GetValue("MachineId").ToString();
                     }
 
                 }
                 NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
-                txtMAC.Text = networkInterfaces.Where(w => w.OperationalStatus == OperationalStatus.Up && !string.IsNullOrEmpty(w.GetPhysicalAddress().ToString())).First().GetPhysicalAddress().ToString();
+                var mac= networkInterfaces.Where(w => w.OperationalStatus == OperationalStatus.Up && !string.IsNullOrEmpty(w.GetPhysicalAddress().ToString())).First().GetPhysicalAddress().ToString(); ;
+
+
+                this.Invoke(new Action(() =>
+                {
+                    txtProductId.Text = productId;
+                    txtInstallDate.Text = installDate;
+                    txtMachineId.Text = machineId;
+                    txtProductName.Text = productName;
+                    txtMAC.Text = mac;
+                }));
             }
             catch (Exception)
             {
@@ -173,7 +183,7 @@ namespace CreateMailOutlook
                    string ho = lstHo[rm.Next(9)];
                    string ten = $"{lstDem[rm.Next(9)]} {lstTen[rm.Next(9)]}";
                    string mail = Regex.Replace(Utils.ToVietNameseChacracter((ho.Trim() + ten.Trim() + Utils.RandomString(4))).ToLower(), "(\\s+)|([^\\w])", "");
-                   string pass = Common.Utils.RandomString(8);
+                   string pass = Common.Utils.RandomPass();
                    WriteLog("Mở app..");
                    Process.Start(PATH_MAIL);
                    while (true)
@@ -307,7 +317,7 @@ namespace CreateMailOutlook
                    }
                    Common.Utils.LeftMouseClick(createPosMonth.X, createPosMonth.Y);
                    Thread.Sleep(1000);
-                   Common.Utils.LeftMouseClick(createPosMonth.X, createPosMonth.Y);
+                   Common.Utils.LeftMouseClick(createPosMonth.X+10, createPosMonth.Y+30);
                    Thread.Sleep(1000);
 
                    WriteLog("Chọn ngày sinh...");
@@ -351,7 +361,7 @@ namespace CreateMailOutlook
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            GetInfo();
         }
 
         private void btnStop_Click(object sender, EventArgs e)
